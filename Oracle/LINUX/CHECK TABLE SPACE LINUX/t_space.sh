@@ -12,17 +12,13 @@
 EMAIL=xx.bryan.xx@msn.com
 #Porcentaje de uso
 PORCENT=85;
-#tamaño para autoextensible ( unlimited=32768 )
+#tamaÃ±o para autoextensible ( unlimited=32768 )
 SIZE=32768
 
 CLIENT="test"
 HOSTNAME=$(hostname)
 
-DPATH=$HOME/scripts 
-if [ -z $1 ]; then
- echo $"Usage: $0 {Database name}";
- exit 1;
-fi
+DPATH=/tmp
 
 DSO(){
 
