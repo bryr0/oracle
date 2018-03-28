@@ -1,10 +1,10 @@
 #Mysql to html 
 
-create .my.cnf
-[client]__
-user=mysqluser<br />
-password=mysqlpass<br />
-host=localhost
+create .my.cnf<br/>
+[client]<br/>
+user=mysqluser<br/>
+password=mysqlpass<br/>
+host=localhost<br/>
 
 Usage
 =====
