@@ -1,9 +1,9 @@
 #Mysql to html 
 
 create .my.cnf
-[client]
-user=mysqluser
-password=mysqlpass
+[client]__
+user=mysqluser<br />
+password=mysqlpass<br />
 host=localhost
 
 Usage
