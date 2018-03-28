@@ -27,10 +27,7 @@
 #         set @@global.show_compatibility_56=on;
 
 
-MPASS="Newm00n"
-MUSER="root"
-INAME="null"
-HOST="localhost"
+INAME="REPORT 1"
 
 # if [ -z $1 ]; then
 # echo "pls define host";
@@ -40,7 +37,7 @@ HOST="localhost"
 ####################
 TMPF="/tmp"
 HOSTNAME=$(hostname);
-CONN="mysql -h $HOST -u $MUSER -p$MPASS"
+CONN="mysql --defaults-file=~/.my.cnf"
 NOW=$(date +"%d-%m-%Y %l:%M:%S")
 
 
@@ -48,6 +45,7 @@ echo "" > $TMPF/dbt.log
 echo "" > ./check.html
 
 Body(){
+echo "[+] exportando datos espere...."
 echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>'$HOSTNAME'</title><style>body{font-family:Roboto,sans-serif;font-size:12.5px;line-height:1.5;color:#555;width:100%;background-color:#fafafa;text-align:center}section{margin-bottom:4rem;}.responsive-table,pre{text-align:left;background-color:#fff}*{box-sizing:border-box}h1.title{font-size:40px;font-weight:400;margin-top:50px;line-height:1.2;color:Tomato}h2.pre-title{margin-top:40px;font-weight:400}pre{min-width:240px;max-width:400px;margin:0 auto 40px;padding:8px 15px;border-radius:6px;box-shadow:0 0 3px rgba(0,0,0,.5) inset;overflow:auto}a{text-decoration:none}#stable>p{cursor:pointer}.responsive-table{border-collapse:collapse;margin:40px auto}.colaps{display:none}.responsive-table tr{border:1px solid #ccc}.responsive-table tr:hover{background-color:#f5f5f5}.responsive-table td,.responsive-table th{padding:3px 10px}.responsive-table th{text-align:center;color:#2EAFEA}@media(max-width:480px){.responsive-table{width:100%}.responsive-table thead{display:none}.responsive-table tbody tr:nth-of-type(even){background-color:#eee}.responsive-table tbody td{display:block}.responsive-table tbody td:before{content:attr(data-table);display:block;float:left;width:40%;margin-right:10px;padding-right:10px;font-weight:700;color:#2EAFEA;border-right:1px solid #ccc}.responsive-table tbody td:after{content:'';display:block;clear:both}}footer{position:fixed;left:0;bottom:0;height:50px;width:100%;background:#2EAFEA}footer p{color:#fff;margin-top:15px}</style></head><body><section><h1 class="title">'$INAME $NOW'</h1>' > ./check.html
 
 }
@@ -270,6 +268,9 @@ fi
 ########## READ TABLES ###########
 done < $TMPF/db.log
 }
+
+## print msg
+echo "[+] collecting data..."
 
 #####head html
 Body

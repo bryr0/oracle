@@ -1,5 +1,11 @@
 #Mysql to html 
 
+create .my.cnf
+[client]
+user=mysqluser
+password=mysqlpass
+host=localhost
+
 Usage
 =====
 very easy usage. xD
