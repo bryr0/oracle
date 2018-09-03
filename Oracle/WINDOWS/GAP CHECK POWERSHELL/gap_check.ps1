@@ -41,6 +41,7 @@ Function MAIL {
       )
             $message = new-object Net.Mail.MailMessage;
             $message.From = "$name <$Email>";
+            $message.IsBodyHTML=$true;
             $message.To.Add($to);
             $message.Subject = $s;
             $message.Body = $c;
