@@ -14,10 +14,10 @@ _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
            +============================+
            |   [Website By Bryan A.] 	|
-           |     [Bryro.comli.com]	    |
+           |     [github.com/bryr0/]	   |
            +============================+
            |        gap_check.ps1 		|
-           |            v.1.7           |
+           |            v.1.9           |
            +----------------------------+
 #>
 
@@ -25,9 +25,12 @@ _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 $GA = 5;
 
 #Email Parameter
-$name="Bryan A."
-$Email = "user@gmail.com";
-$Password= "password";
+$name="Company name."
+$TO_USER = @("user@gmail.com","user@gmail.com");
+
+$Email= "user@gmail.com"
+$Password= "mail_password";
+$DBAPASS="dba_password"
 
 Function MAIL {
       Param (
@@ -60,21 +63,20 @@ Function MAIL {
   }
 
 
-
-
 Function GAP(){
 
 $T="`t"
 $_ = "_" * 73
 
-$P="sELECT 'Last Generated on Primary:'Logs,to_char(next_time,'DD-MON-YY:HH24:MI:SS') Time,sequence`# from v`$archived_log where sequence`# = (select cast(to_char(max( decode (archived, 'YES', sequence#, 0)) ) as varchar2(10)) from v`$log group by thread`#);
+$P="select  'Last Generated on Primary: ' Logs, to_char(next_time,'DD-MON-YY:HH24:MI:SS') Time, sequence`# from v`$archived_log where sequence`# = ( select S from ( select (cast(to_char(max( decode (archived, 'YES', sequence`#)) ) as varchar2(10))) S from v`$log  group by thread`#) where rownum <=1 );
+exit;"
+
+$S="select 'Last Applied on Standby: 'Logs, to_char(max(FIRST_TIME),'DD-MON-YY:HH24:MI:SS') Time, max(sequence`#) sequence`# from v`$log_history where FIRST_TIME >= ( SELECT T FROM ( SELECT MAX(FIRST_TIME) T FROM V`$LOG_HISTORY GROUP BY THREAD`# ORDER BY T DESC ) WHERE ROWNUM <= 1);
 exit;" 
 
-$S="select 'Last Applied on Standby: 'Logs, to_char(max(FIRST_TIME),'DD-MON-YY:HH24:MI:SS') Time, max(sequence`#) sequence`# from v`$log_history where FIRST_TIME >= (SELECT MAX(FIRST_TIME) FROM V`$LOG_HISTORY GROUP BY THREAD`#);
-exit;" 
+$QP = echo $P.replace("¦"," ") | sqlplus "system/$DBAPASS@primary"
+$QS = echo $S.replace("¦"," ") | sqlplus "sys/$DBAPASS@standby as sysdba"
 
-$QP=echo $P.replace("¦"," ") | sqlplus 'system/system_mgr@primary'
-$QS=echo $S.replace("¦"," ") | sqlplus '/as sysdba'
 
 $PD=((echo $QP | Select-String "Primary") -split " +")[4] # date
 $PG=((echo $QP | Select-String "Primary") -split " +")[5] # gap
@@ -92,7 +94,11 @@ $BM += " GAP DIFERENCE$T$T$T$T$T$T$T $TOTAL `n"
 $BM += "`n"
 
 if ($TOTAL -ge $GA) {
-  MAIL  -s "GAP ALERT" -c $BM -to "xx.abryan.xx@gmail.com";
+	foreach ($TO_ in $TO_USER) {
+		MAIL  -s "GAP ALERT" -c $BM -to $TO_;
+	}
+Exit
+  
 }
 return $BM
 }
@@ -100,11 +106,6 @@ return $BM
 $BM=GAP;
 echo $BM
 
-#atachment
-#MAIL  -s "subject hello" -c "body text" -a 'C:\backup\file.txt' "user@gmail.com";
-
-#simple
-#MAIL  -s "subject hello" -c "body text" -to "user@gmail.com";
-
-Read-Host "Press any key to exit..."
-exit
+echo "close in 5 seconds"
+Start-Sleep -s 5
+Exit
