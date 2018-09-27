@@ -83,11 +83,11 @@ $SG=((echo $QP) -split " +")[1] # gap standby
 $TOTAL=($PG-$SG)
 
 $BM  = "`n" 
-$BM += " LOGS $T$T$T$T TIME $T$T$T$T SEQUENCE# `n" 
+$BM += " LOGS $T$T$T$T TIME $T$T$T SEQUENCE# `n" 
 $BM += " Last Generated on Primary $T $PD $T $PG `n" 
 $BM += " Last Applied on Standby $T $SD $T $SG `n" 
 $BM += " $_ `n"
-$BM += " GAP DIFERENCE$T$T$T$T$T$T$T $TOTAL `n"
+$BM += " GAP DIFERENCE$T$T$T$T$T$T $TOTAL `n"
 $BM += "`n"
 
 if ($TOTAL -ge $GA) {
