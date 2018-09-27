@@ -17,7 +17,7 @@ _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
            |     [github.com/bryr0/]	   |
            +============================+
            |        gap_check.ps1 		|
-           |            v.1.9           |
+           |            v.1.11          |
            +----------------------------+
 #>
 
@@ -77,8 +77,8 @@ $QS = echo $S.replace("¦"," ") | sqlplus -S "sys/$DBAPASS@standby as sysdba"
 
 $PD=((echo $QP) -split " +")[0] # date
 $PG=((echo $QP) -split " +")[1] # gap
-$SD=((echo $QP) -split " +")[0] # date standby
-$SG=((echo $QP) -split " +")[1] # gap standby
+$SD=((echo $QS) -split " +")[0] # date standby
+$SG=((echo $QS) -split " +")[1] # gap standby
 
 $TOTAL=($PG-$SG)
 
