@@ -69,20 +69,16 @@ Function GAP(){
 $T="`t"
 $_ = "_" * 73
 
-$P="select  'Last Generated on Primary: ' Logs, to_char(next_time,'DD-MON-YY:HH24:MI:SS') Time, sequence`# from v`$archived_log where sequence`# = ( select S from ( select (cast(to_char(max( decode (archived, 'YES', sequence`#)) ) as varchar2(10))) S from v`$log  group by thread`#) where rownum <=1 );
-exit;"
+$P="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE NS NUMBER(10); LS NUMBER(10); TIMED VARCHAR2(50); BEGIN FOR n IN( select cast( to_char( max( decode (archived, 'YES', sequence`#))) as varchar2(10)) sequence from v`$log group by thread`#) LOOP NS := n.sequence; select to_char(next_time,'DD-MON-YY:HH24:MI:SS') Time, sequence`# INTO TIMED, LS from v`$archived_log where sequence`# = ( NS ); dbms_output.put_line( TIMED || ' ' || LS); END LOOP; END; `n / `n exit;";
+$S="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE LS NUMBER(10); TIMED VARCHAR2(50); BEGIN select to_char(max(FIRST_TIME),'DD-MON-YY:HH24:MI:SS') Time, max(sequence`#) sequence`# INTO TIMED, LS from v`$log_history where FIRST_TIME >=( SELECT MAX(FIRST_TIME) FROM V`$LOG_HISTORY WHERE ROWNUM = 1 GROUP BY THREAD`#); dbms_output.put_line( TIMED || ' ' || LS); END; `n / `n exit;";
 
-$S="select 'Last Applied on Standby: 'Logs, to_char(max(FIRST_TIME),'DD-MON-YY:HH24:MI:SS') Time, max(sequence`#) sequence`# from v`$log_history where FIRST_TIME >= ( SELECT T FROM ( SELECT MAX(FIRST_TIME) T FROM V`$LOG_HISTORY GROUP BY THREAD`# ORDER BY T DESC ) WHERE ROWNUM <= 1);
-exit;" 
+$QP = echo $P.replace("¦"," ") | sqlplus -S "system/$DBAPASS@primary"
+$QS = echo $S.replace("¦"," ") | sqlplus -S "sys/$DBAPASS@standby as sysdba"
 
-$QP = echo $P.replace("¦"," ") | sqlplus "system/$DBAPASS@primary"
-$QS = echo $S.replace("¦"," ") | sqlplus "sys/$DBAPASS@standby as sysdba"
-
-
-$PD=((echo $QP | Select-String "Primary") -split " +")[4] # date
-$PG=((echo $QP | Select-String "Primary") -split " +")[5] # gap
-$SD=((echo $QS | Select-String "Standby") -split " +")[4] # date standby
-$SG=((echo $QS | Select-String "Standby") -split " +")[5] # gap standby
+$PD=((echo $QP) -split " +")[0] # date
+$PG=((echo $QP) -split " +")[1] # gap
+$SD=((echo $QP) -split " +")[0] # date standby
+$SG=((echo $QP) -split " +")[1] # gap standby
 
 $TOTAL=($PG-$SG)
 
