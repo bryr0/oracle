@@ -99,14 +99,17 @@ Function GAP(){
 
     $NC+=3
   }
- return $BM
-}
 
-if ( $GSS == 1) {
+  if ($GSS -eq 1) {
     foreach ($TO_ in $TO_USER) {
       MAIL  -s "GAP ALERT" -c $BM -to $TO_;
     }
+  }
+  
+ return $BM
 }
+
+
 
 $BM=GAP;
 echo $BM
