@@ -17,7 +17,7 @@
 #           |        [MysqlReport]       |
 #           |     xx.bryan.xx@msn.com    |
 #           +============================+
-#           |         Version 1.2        |
+#           |         Version 1.4        |
 #           |       Date:14-SEP-17       |
 #           |      [Bryro.comli.com]     |
 #           +----------------------------+
@@ -40,18 +40,22 @@ HOSTNAME=$(hostname);
 CONN="mysql --defaults-file=~/.my.cnf"
 NOW=$(date +"%d-%m-%Y %l:%M:%S")
 
-
+tput sc
 echo "" > $TMPF/dbt.log
 echo "" > ./check.html
 
 Body(){
-echo "[+] exportando datos espere...."
+tput rc; tput el
+printf "[+] exportando datos espere...."
 echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>'$HOSTNAME'</title><style>body{font-family:Roboto,sans-serif;font-size:12.5px;line-height:1.5;color:#555;width:100%;background-color:#fafafa;text-align:center}section{margin-bottom:4rem;}.responsive-table,pre{text-align:left;background-color:#fff}*{box-sizing:border-box}h1.title{font-size:40px;font-weight:400;margin-top:50px;line-height:1.2;color:Tomato}h2.pre-title{margin-top:40px;font-weight:400}pre{min-width:240px;max-width:400px;margin:0 auto 40px;padding:8px 15px;border-radius:6px;box-shadow:0 0 3px rgba(0,0,0,.5) inset;overflow:auto}a{text-decoration:none}#stable>p{cursor:pointer}.responsive-table{border-collapse:collapse;margin:40px auto}.colaps{display:none}.responsive-table tr{border:1px solid #ccc}.responsive-table tr:hover{background-color:#f5f5f5}.responsive-table td,.responsive-table th{padding:3px 10px}.responsive-table th{text-align:center;color:#2EAFEA}@media(max-width:480px){.responsive-table{width:100%}.responsive-table thead{display:none}.responsive-table tbody tr:nth-of-type(even){background-color:#eee}.responsive-table tbody td{display:block}.responsive-table tbody td:before{content:attr(data-table);display:block;float:left;width:40%;margin-right:10px;padding-right:10px;font-weight:700;color:#2EAFEA;border-right:1px solid #ccc}.responsive-table tbody td:after{content:'';display:block;clear:both}}footer{position:fixed;left:0;bottom:0;height:50px;width:100%;background:#2EAFEA}footer p{color:#fff;margin-top:15px}</style></head><body><section><h1 class="title">'$INAME $NOW'</h1>' > ./check.html
 
 }
 
 Footer(){
 echo '</section><footer><p>© 2017 <a href="https://github.com/bryr0/">bryr0</a> THANKS.</p></footer><script>function $(e){return document.querySelectorAll(e)}document.addEventListener("click",function(e){"P"==e.target.tagName&&(selected=e.target.innerHTML,t=document.getElementById("S_"+selected),"none"==t.style.display?t.style.display="initial":t.style.display="none")});</script></body></html>' >> ./check.html
+tput rc; tput el
+printf "[+] todos los datos exportando...."
+tput rc; tput ed;
 }
 
 sanearb(){
@@ -65,7 +69,8 @@ sanear(){
 }
 
 OS(){
-
+tput rc; tput el
+printf "[+] exportando OS info espere...."
 echo "" > $TMPF/so.log
 echo "<h1 class='title'>$1</h1><table class='responsive-table'>" >> ./check.html
 $2 > $TMPF/so.log
@@ -98,6 +103,8 @@ echo "</table>" >> ./check.html
 }
 
 EQ(){
+tput rc; tput el
+printf "[+] exportando Querys info espere...."
 
 [ ! -z $3 ] && DTTS="use $3" #|| DTTS="use information_schema;"
 
@@ -187,6 +194,8 @@ EQ "Informacion de Indices" "select index_name, index_type, index_schema, table_
 }
 
 DesAll(){
+tput rc; tput el
+printf "[+] exportando all tables espere...."
 
 echo "" > $TMPF/dbt.log
 echo "<h1 class='title'>ALL DATABASE</h1>" >> ./check.html
@@ -201,6 +210,8 @@ while read -r values
 do
 
 DBS=$(echo $values | awk '{print $1}')
+tput rc; tput el
+printf "[+] exportando DATABASE $DBS espere..."
 
 if [ "$DBS" != "Database" ]; then
 
@@ -218,7 +229,6 @@ while read -r value
 do
 
 TDB=$(echo $value | awk '{print $1}')
-
 TBI=$(echo $TDB | grep '^Tables_in_' ) > /dev/null
 
 if [ "$TBI" == "" ]; then
@@ -269,9 +279,6 @@ fi
 done < $TMPF/db.log
 }
 
-## print msg
-echo "[+] collecting data..."
-
 #####head html
 Body
 
@@ -289,3 +296,4 @@ DesAll
 
 #### footer html 
 Footer
+
