@@ -1,7 +1,7 @@
 # oracle windows
 oracle powershel scripts
 
-## example
+## console example
 
 | LOGS                                    | TIME                        | SEQUENCE#  |
 |-----------------------------------------|-----------------------------|------------|
