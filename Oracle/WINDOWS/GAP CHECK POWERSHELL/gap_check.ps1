@@ -13,24 +13,36 @@ _/                                      _/_/_/_/_/
 _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
            +============================+
-           |   [Website By Bryan A.] 	|
-           |     [github.com/bryr0/]	   |
+           |   [Website By Bryan A.]  |
+           |     [Bryro.comli.com]      |
            +============================+
-           |        gap_check.ps1 		|
-           |            v.1.12          |
+           |        gap_check.ps1     |
+           |            v.1.13          |
            +----------------------------+
 #>
 
 # GAP DIFFERENCE ALERT
 $GA = 5;
 
-#Email Parameter
+# Email Parameter
 $name="Company name."
 $TO_USER = @("user@gmail.com","user@gmail.com");
-
 $Email= "user@gmail.com"
-$Password= "mail_password";
-$DBAPASS="dba_password"
+$Password= "password";
+
+# Database Parameter
+$DBUSER = "SYS";
+$DBAPASS = "system";
+
+
+#Email html format
+$HEAD="<head><style>table{color:#444;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;border:1px solid #ddd}thead{background:#333;color:#fff}td,th{text-align:left;padding:8px}tr:nth-child(even){background-color:#eee}</style>
+</head><body><h2>Gap Sequence</h2> <table> <thead> <tr> <th>LOGS</th> <th>TIME</th> <th>SEQUENCE#</th> </tr></thead>";
+$BODY="<tbody>{0}</tbody></table></body>";
+
+$TR1="<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>";
+$TR2="<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>";
+$TR3="<tr><td colspan='2'>{0}</td><td>{1}</td></tr>";
 
 Function MAIL {
       Param (
@@ -41,7 +53,7 @@ Function MAIL {
       )
             $message = new-object Net.Mail.MailMessage;
             $message.From = "$name <$Email>";
-            $message.IsBodyHTML=$true;
+            $message.IsBodyHTML=$true
             $message.To.Add($to);
             $message.Subject = $s;
             $message.Body = $c;
@@ -70,29 +82,43 @@ Function GAP(){
   $T="`t"
   $_ = "_" * 70
   $GSS= 0;
-  $BM = "`n";
+  $GC = "`n";
+  $SCR=" LOGS $T$T$T$T TIME $T$T$T SEQUENCE# `n Last Generated on Primary[{0}] $T {1} $T {2} `n Last Applied on Standby[{0}] $T {3} $T {4} `n $_ `n GAP DIFERENCE$T$T$T$T$T$T {5} `n";
 
-  $P="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE NS NUMBER(10); C NUMBER(10) := 0; LS NUMBER(10); TIMED VARCHAR2(50); BEGIN FOR n IN( select cast( to_char( max( decode (archived, 'YES', sequence`#))) as varchar2(10)) sequence from v`$log group by thread`#) LOOP NS := n.sequence; C := C + 1; select to_char(next_time,'DD-MON-YY:HH24:MI:SS') Time, sequence`# INTO TIMED, LS from v`$archived_log where sequence`# = ( NS ); dbms_output.put_line( TIMED || ' ' || LS || ' ' || C); END LOOP; END; `n / `n exit;";
-  $S="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE NS VARCHAR2(50); C NUMBER(10) := 0; LS NUMBER(10); TIMED VARCHAR2(50); BEGIN FOR n IN( SELECT MAX(FIRST_TIME) Time FROM V`$LOG_HISTORY GROUP BY THREAD`#) LOOP NS := n.Time ; select to_char(max(FIRST_TIME),'DD-MON-YY:HH24:MI:SS') Time, max(sequence`#) sequence`# INTO TIMED, LS from v`$log_history where FIRST_TIME >=( NS); dbms_output.put_line( TIMED || ' ' || LS || ' ' || C); END LOOP; END; `n / `n exit;"
 
-  $QP = echo $P.replace("¦"," ") | sqlplus -S "system/$DBAPASS@primary"
-  $QS = echo $S.replace("¦"," ") | sqlplus -S "sys/$DBAPASS@standby as sysdba"
-  $CO=((echo $QP) -split " +")[2] # counter
+  $P="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE NS NUMBER(10); C NUMBER(10) := 0; LS NUMBER(10); TIMED VARCHAR2(50); BEGIN FOR n IN(
+  select cast( to_char( max( decode (archived, 'YES', sequence`#))) as varchar2(10)) sequence from v`$log group by thread`#) LOOP NS := 
+  n.sequence; C := C + 1;  select to_char(next_time,'DD-MON-YY:HH24:MI:SS'),sequence`# into TIMED,LS from v`$log where sequence`# = (NS); 
+  dbms_output.put_line( TIMED || ' ' || LS || ' ' || C); END LOOP; END; `n / `n exit;"
+
+  $S="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE NS NUMBER(10); C NUMBER(10) := 0; LS NUMBER(10); TIMED VARCHAR2(50); BEGIN FOR n IN( 
+  select sequence from ( select sequence`# sequence from v`$log_history order by FIRST_CHANGE`# desc) where rownum <= 10) LOOP NS := n.sequence 
+  ; select to_char(max(FIRST_TIME),'DD-MON-YY:HH24:MI:SS') Time INTO TIMED from v`$log_history where sequence`# =(NS); dbms_output.put_line( 
+  TIMED || ' ' || NS || ' ' || C); END LOOP; END; `n / `n exit;"
+
+
+  $QP = echo $P.replace("¦"," ") | sqlplus -S "$DBUSER/$DBAPASS@PRIMARY as sysdba"
+  $QS = echo $S.replace("¦"," ") | sqlplus -S "$DBUSER/$DBAPASS@standby as sysdba"
+
+  $CO = ((echo $QP) -split " +") # split elements
+  $CO = $CO[($CO.Length)-1];     # counter
+  
 
   For ($i=1; $i -le $CO; $i++) {
-    
-    $PD = ((echo $QP) -split " +")[$NC]   # date
+    $msg="`n";
+    $PD = ((echo $QP) -split " +")[$NC] # date
     $PG = ((echo $QP) -split " +")[$NC+1] # gap
-    $SD = ((echo $QS) -split " +")[$NC]   # standby date
+    $SD = ((echo $QS) -split " +")[$NC] # standby date
     $SG = ((echo $QS) -split " +")[$NC+1] # standby gap
 
+    
     $TOTAL=($PG-$SG)
-    $BM += " LOGS $T$T$T$T TIME $T$T$T SEQUENCE# `n" 
-    $BM += " Last Generated on Primary[$i] $T $PD $T $PG `n" 
-    $BM += " Last Applied on Standby $T $SD $T $SG `n" 
-    $BM += " $_ `n"
-    $BM += " GAP DIFERENCE$T$T$T$T$T$T $TOTAL `n"
-    $BM += "`n"
+    $msg += $TR1 -f "Last Generated on Primary[$i]",$PD,$PG;
+    $msg += $TR2 -f "Last Applied on Standby[$i]",$SD,$SG;
+    $msg += $TR3 -f "GAP DIFERENCE",$TOTAL;
+
+    $GC += $SCR -f $i,$PD,$PG,$SD,$SG,$TOTAL;
+    $GC += "`n";
 
     if ($TOTAL -ge $GA) {
       $GSS = 1;
@@ -103,16 +129,18 @@ Function GAP(){
 
   if ($GSS -eq 1) {
     foreach ($TO_ in $TO_USER) {
-      MAIL  -s "GAP ALERT" -c $BM -to $TO_;
+      $tmp = $HEAD;
+      $tmp += $BODY -f $msg;
+      MAIL  -s "GAP ALERT" -c $tmp -to $TO_;
     }
   }
-  
- return $BM
+ return $GC;
 }
+
 
 $BM=GAP;
 echo $BM
 
-echo "close in 5 seconds"
-Start-Sleep -s 5
-Exit
+echo " Close in 10 seconds"
+Start-Sleep -s 10
+exit
