@@ -17,12 +17,16 @@ _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
            |     [Bryro.comli.com]      |
            +============================+
            |        gap_check.ps1     |
+<<<<<<< HEAD
            |            v.1.13          |
+=======
+           |            v.1.15          |
+>>>>>>> 929c19aa02f8ef6cecc1ba52c26a374d6286da1a
            +----------------------------+
 #>
 
 # GAP DIFFERENCE ALERT
-$GA = 5;
+$GA = 10;
 
 # Email Parameter
 $name="Company name."
@@ -34,6 +38,15 @@ $Password= "password";
 $DBUSER = "SYS";
 $DBAPASS = "system";
 
+
+#Email html format
+$HEAD="<head><style>table{color:#444;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;border:1px solid #ddd}thead{background:#333;color:#fff}td,th{text-align:left;padding:8px}tr:nth-child(even){background-color:#eee}</style>
+</head><body><h2>Gap Sequence</h2> <table> <thead> <tr> <th>LOGS</th> <th>TIME</th> <th>SEQUENCE#</th> </tr></thead>";
+$BODY="<tbody>{0}</tbody></table></body>";
+
+$TR1="<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>";
+$TR2="<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>";
+$TR3="<tr><td colspan='2'>{0}</td><td>{1}</td></tr>";
 
 #Email html format
 $HEAD="<head><style>table{color:#444;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;border:1px solid #ddd}thead{background:#333;color:#fff}td,th{text-align:left;padding:8px}tr:nth-child(even){background-color:#eee}</style>
@@ -82,6 +95,7 @@ Function GAP(){
   $T="`t"
   $_ = "_" * 70
   $GSS= 0;
+<<<<<<< HEAD
   $GC = "`n";
   $SCR=" LOGS $T$T$T$T TIME $T$T$T SEQUENCE# `n Last Generated on Primary[{0}] $T {1} $T {2} `n Last Applied on Standby[{0}] $T {3} $T {4} `n $_ `n GAP DIFERENCE$T$T$T$T$T$T {5} `n";
 
@@ -95,6 +109,9 @@ Function GAP(){
   select sequence from ( select sequence`# sequence from v`$log_history order by FIRST_CHANGE`# desc) where rownum <= 10) LOOP NS := n.sequence 
   ; select to_char(max(FIRST_TIME),'DD-MON-YY:HH24:MI:SS') Time INTO TIMED from v`$log_history where sequence`# =(NS); dbms_output.put_line( 
   TIMED || ' ' || NS || ' ' || C); END LOOP; END; `n / `n exit;"
+=======
+  $SCR=" LOGS $T$T$T$T TIME $T$T$T SEQUENCE# `n Last Generated on Primary[{0}] $T {1} $T {2} `n Last Applied on Standby[{0}] $T {3} $T {4} `n $_ `n GAP DIFERENCE$T$T$T$T$T$T {5} `n";
+>>>>>>> 929c19aa02f8ef6cecc1ba52c26a374d6286da1a
 
 
   $QP = echo $P.replace("¦"," ") | sqlplus -S "$DBUSER/$DBAPASS@PRIMARY as sysdba"
@@ -105,6 +122,10 @@ Function GAP(){
   
 
   For ($i=1; $i -le $CO; $i++) {
+<<<<<<< HEAD
+=======
+    $BM = "`n";
+>>>>>>> 929c19aa02f8ef6cecc1ba52c26a374d6286da1a
     $msg="`n";
     $PD = ((echo $QP) -split " +")[$NC] # date
     $PG = ((echo $QP) -split " +")[$NC+1] # gap
@@ -114,11 +135,19 @@ Function GAP(){
     
     $TOTAL=($PG-$SG)
     $msg += $TR1 -f "Last Generated on Primary[$i]",$PD,$PG;
+<<<<<<< HEAD
     $msg += $TR2 -f "Last Applied on Standby[$i]",$SD,$SG;
     $msg += $TR3 -f "GAP DIFERENCE",$TOTAL;
 
     $GC += $SCR -f $i,$PD,$PG,$SD,$SG,$TOTAL;
     $GC += "`n";
+=======
+    $msg += $TR2-f "Last Applied on Standby[$i]",$SD,$SG;
+    $msg += $TR3 -f "GAP DIFERENCE",$TOTAL;
+
+    $BM+= $SCR -f $i,$PD,$PG,$SD,$SG,$TOTAL;
+    $BM += "`n";
+>>>>>>> 929c19aa02f8ef6cecc1ba52c26a374d6286da1a
 
     if ($TOTAL -ge $GA) {
       $GSS = 1;
@@ -134,7 +163,11 @@ Function GAP(){
       MAIL  -s "GAP ALERT" -c $tmp -to $TO_;
     }
   }
+<<<<<<< HEAD
  return $GC;
+=======
+ return $BM
+>>>>>>> 929c19aa02f8ef6cecc1ba52c26a374d6286da1a
 }
 
 
