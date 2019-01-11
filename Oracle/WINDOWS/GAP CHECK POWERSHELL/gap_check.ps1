@@ -83,6 +83,7 @@ Function GAP(){
   $_ = "_" * 70
   $GSS= 0;
   $GC = "`n";
+  $MSG="`n";
   $SCR=" LOGS $T$T$T$T TIME $T$T$T SEQUENCE# `n Last Generated on Primary[{0}] $T {1} $T {2} `n Last Applied on Standby[{0}] $T {3} $T {4} `n $_ `n GAP DIFERENCE$T$T$T$T$T$T {5} `n";
 
 
@@ -105,7 +106,7 @@ Function GAP(){
   
 
   For ($i=1; $i -le $CO; $i++) {
-    $msg="`n";
+
     $PD = ((echo $QP) -split " +")[$NC] # date
     $PG = ((echo $QP) -split " +")[$NC+1] # gap
     $SD = ((echo $QS) -split " +")[$NC] # standby date
@@ -113,9 +114,9 @@ Function GAP(){
 
     
     $TOTAL=($PG-$SG)
-    $msg += $TR1 -f "Last Generated on Primary[$i]",$PD,$PG;
-    $msg += $TR2 -f "Last Applied on Standby[$i]",$SD,$SG;
-    $msg += $TR3 -f "GAP DIFERENCE",$TOTAL;
+    $MSG += $TR1 -f "Last Generated on Primary[$i]",$PD,$PG;
+    $MSG += $TR2 -f "Last Applied on Standby[$i]",$SD,$SG;
+    $MSG += $TR3 -f "GAP DIFERENCE",$TOTAL;
 
     $GC += $SCR -f $i,$PD,$PG,$SD,$SG,$TOTAL;
     $GC += "`n";
@@ -130,7 +131,7 @@ Function GAP(){
   if ($GSS -eq 1) {
     foreach ($TO_ in $TO_USER) {
       $tmp = $HEAD;
-      $tmp += $BODY -f $msg;
+      $tmp += $BODY -f $MSG;
       MAIL  -s "GAP ALERT" -c $tmp -to $TO_;
     }
   }
