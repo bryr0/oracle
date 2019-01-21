@@ -86,13 +86,14 @@ Function GAP(){
   $SCR=" LOGS $T$T$T$T TIME $T$T$T SEQUENCE# `n Last Generated on Primary[{0}] $T {1} $T {2} `n Last Applied on Standby[{0}] $T {3} $T {4} `n $_ `n GAP DIFERENCE$T$T$T$T$T$T {5} `n";
 
 
-  $P="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE NS NUMBER(10); C NUMBER(10) := 0; LS NUMBER(10); TIMED VARCHAR2(50); BEGIN FOR n IN(
-  select cast( to_char( max( decode (archived, 'YES', sequence`#))) as varchar2(10)) sequence from v`$log group by thread`#) LOOP NS := 
-  n.sequence; C := C + 1;  select to_char(next_time,'DD-MON-YY:HH24:MI:SS'),sequence`# into TIMED,LS from v`$log where sequence`# = (NS); 
+  $P="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE NS NUMBER(10); C NUMBER(10) := 0; LS NUMBER(10); TIMED VARCHAR2(50); BEGIN FOR n IN( 
+  select cast( to_char( max( decode (archived, 'YES', sequence`#))) as varchar2(10)) sequence from v`$log group by thread`# order by sequence 
+  DESC) LOOP NS := n.sequence; C := C + 1; 
+  select to_char(next_time,'DD-MON-YY:HH24:MI:SS'),sequence`# into TIMED,LS from v`$log where sequence`# = (NS); 
   dbms_output.put_line( TIMED || ' ' || LS || ' ' || C); END LOOP; END; `n / `n exit;"
 
   $S="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE NS NUMBER(10); C NUMBER(10) := 0; LS NUMBER(10); TIMED VARCHAR2(50); BEGIN FOR n IN( 
-  select sequence from ( select sequence`# sequence from v`$log_history order by FIRST_CHANGE`# desc) where rownum <= 10) LOOP NS := n.sequence 
+  select max(sequence`#) sequence from v`$log_history group by thread# order by sequence DESC) LOOP NS := n.sequence 
   ; select to_char(max(FIRST_TIME),'DD-MON-YY:HH24:MI:SS') Time INTO TIMED from v`$log_history where sequence`# =(NS); dbms_output.put_line( 
   TIMED || ' ' || NS || ' ' || C); END LOOP; END; `n / `n exit;"
 
