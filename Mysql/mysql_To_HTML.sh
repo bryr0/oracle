@@ -52,7 +52,7 @@ echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>'$HOSTNA
 }
 
 Footer(){
-echo '</section><footer><p>© 2017 <a href="https://github.com/bryr0/">bryr0</a> THANKS.</p></footer><script>function $(e){return document.querySelectorAll(e)}document.addEventListener("click",function(e){"P"==e.target.tagName&&(selected=e.target.innerHTML,t=document.getElementById("S_"+selected),"none"==t.style.display?t.style.display="initial":t.style.display="none")});</script></body></html>' >> ./check.html
+echo '</section><footer><p>© 2017 <a href="https://github.com/bryr0/">bryr0</a> THANKS.</p></footer><script>var $=s=>document.querySelectorAll(s);document.addEventListener("click",function(e){"P"==e.target.tagName&&(selected=e.target.innerHTML,t=document.getElementById("S_"+selected),"none"==t.style.display?t.style.display="initial":t.style.display="none")});</script></body></html>' >> ./check.html
 tput rc; tput el
 printf "[+] todos los datos exportando...."
 tput rc; tput ed;
@@ -233,7 +233,7 @@ TBI=$(echo $TDB | grep '^Tables_in_' ) > /dev/null
 
 if [ "$TBI" == "" ]; then
 
-echo "<div id='stable'><p>$TDB</p><table class='responsive-table colaps' id='S_"$TDB"'>" >> ./check.html
+echo "<div id='stable'><p>$TDB</p><table class='responsive-table colaps' id='S_"$TDB"' style='display: none;'>" >> ./check.html
 
 ########## DESCRIBE TABLES ###############
 $CONN<< EOFDB > $TMPF/dbd.log
