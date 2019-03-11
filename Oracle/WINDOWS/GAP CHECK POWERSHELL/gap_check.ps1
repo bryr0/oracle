@@ -13,11 +13,11 @@ _/                                      _/_/_/_/_/
 _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
            +============================+
-           |   [Website By Bryan A.]  |
-           |     [Bryro.comli.com]      |
+           |   [Website By Bryan A.]    |
+           |     [github.com/bryr0]     |
            +============================+
-           |        gap_check.ps1     |
-           |            v.1.15          |
+           |        gap_check.ps1       |
+           |            v.1.21          |
            +----------------------------+
 #>
 
@@ -30,12 +30,15 @@ $TO_USER = @("user@gmail.com","user@gmail.com");
 $Email= "user@gmail.com"
 $Password= "password";
 
+# Database account
+$DBUSER = "System";
+$DBAPASS = "password";
+
 # Database Parameter
-$DBUSER = "SYS";
-$DBAPASS = "system";
+$env:ORACLE_HOME="C:\app\Undefined\product\11.2.0\db_1";
+$env:ORACLE_SID= "DBPROD";
 
-
-#Email html format
+# Email html format
 $HEAD="<head><style>table{color:#444;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;border:1px solid #ddd}thead{background:#333;color:#fff}td,th{text-align:left;padding:8px}tr:nth-child(even){background-color:#eee}</style>
 </head><body><h2>Gap Sequence</h2> <table> <thead> <tr> <th>LOGS</th> <th>TIME</th> <th>SEQUENCE#</th> </tr></thead>";
 $BODY="<tbody>{0}</tbody></table></body>";
@@ -84,13 +87,16 @@ Function GAP(){
   $GSS= 0;
   $GC = "`n";
   $MSG="`n";
+  $ORACLE_R=(Get-Item -Path ".\").FullName;  # current path
+  $ORACLE_BIN="${env:ORACLE_HOME}\BIN";      # oracle bin
+  
   $SCR=" LOGS $T$T$T$T TIME $T$T$T SEQUENCE# `n Last Generated on Primary[{0}] $T {1} $T {2} `n Last Applied on Standby[{0}] $T {3} $T {4} `n $_ `n GAP DIFERENCE$T$T$T$T$T$T {5} `n";
 
 
   $P="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE NS NUMBER(10); C NUMBER(10) := 0; LS NUMBER(10); TIMED VARCHAR2(50); BEGIN FOR n IN( 
   select cast( to_char( max( decode (archived, 'YES', sequence`#))) as varchar2(10)) sequence from v`$log group by thread`# order by sequence 
   DESC) LOOP NS := n.sequence; C := C + 1; 
-  select to_char(next_time,'DD-MON-YY:HH24:MI:SS'),sequence`# into TIMED,LS from v`$log where sequence`# = (NS); 
+  select to_char(max(FIRST_TIME),'DD-MON-YY:HH24:MI:SS'),max(sequence`#) into TIMED,LS from v`$log where sequence`# = (NS); 
   dbms_output.put_line( TIMED || ' ' || LS || ' ' || C); END LOOP; END; `n / `n exit;"
 
   $S="set serveroutput on;`n SET FEEDBACK OFF;`n DECLARE NS NUMBER(10); C NUMBER(10) := 0; LS NUMBER(10); TIMED VARCHAR2(50); BEGIN FOR n IN( 
@@ -98,19 +104,21 @@ Function GAP(){
   ; select to_char(max(FIRST_TIME),'DD-MON-YY:HH24:MI:SS') Time INTO TIMED from v`$log_history where sequence`# =(NS); dbms_output.put_line( 
   TIMED || ' ' || NS || ' ' || C); END LOOP; END; `n / `n exit;"
 
+  Set-Location -Path $ORACLE_BIN; # move to ORACLE_BIN
 
-  $QP = echo $P.replace("¦"," ") | sqlplus -S "$DBUSER/$DBAPASS@PRIMARY as sysdba"
-  $QS = echo $S.replace("¦"," ") | sqlplus -S "$DBUSER/$DBAPASS@standby as sysdba"
-
+  $QP = echo $P.replace("¦"," ") | ./sqlplus -S "$DBUSER/$DBAPASS@PRIMARY as sysdba"
+  $QS = echo $S.replace("¦"," ") | ./sqlplus -S "$DBUSER/$DBAPASS@STANDBY as sysdba"
+ 
   $CO = ((echo $QP) -split " +") # split elements
   $CO = $CO[($CO.Length)-1];     # counter
   
+  Set-Location -Path $ORACLE_R;  # return initial path
 
   For ($i=1; $i -le $CO; $i++) {
 
-    $PD = ((echo $QP) -split " +")[$NC] # date
+    $PD = ((echo $QP) -split " +")[$NC]   # date
     $PG = ((echo $QP) -split " +")[$NC+1] # gap
-    $SD = ((echo $QS) -split " +")[$NC] # standby date
+    $SD = ((echo $QS) -split " +")[$NC]   # standby date
     $SG = ((echo $QS) -split " +")[$NC+1] # standby gap
 
     
