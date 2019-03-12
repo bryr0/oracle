@@ -52,7 +52,7 @@ echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>'$HOSTNA
 }
 
 Footer(){
-echo '</section><footer><p>© 2017 <a href="https://github.com/bryr0/">bryr0</a> THANKS.</p></footer><script>var $=s=>document.querySelectorAll(s);document.addEventListener("click",function(e){"P"==e.target.tagName&&(selected=e.target.innerHTML,t=document.getElementById("S_"+selected),"none"==t.style.display?t.style.display="initial":t.style.display="none")});</script></body></html>' >> ./check.html
+echo '</section><footer><p>© 2017 <a href="https://github.com/bryr0/">bryr0</a> THANKS.</p></footer><script>var $=s=>document.querySelectorAll(s);document.addEventListener("click", function(e){"P"==e.target.tagName &&(t=document.getElementById("S_"+e.target.innerText),t.style.display=("none"==t.style.display||""==t.style.display)?"initial":"none")});</script></body></html>' >> ./check.html
 tput rc; tput el
 printf "[+] todos los datos exportando...."
 tput rc; tput ed;
